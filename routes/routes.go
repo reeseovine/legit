@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"git.icyphox.sh/legit/config"
@@ -15,11 +17,22 @@ import (
 	"github.com/alexedwards/flow"
 	"github.com/dustin/go-humanize"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/russross/blackfriday/v2"
+	"github.com/yuin/goldmark"
+    "github.com/yuin/goldmark/extension"
 )
 
 type deps struct {
 	c *config.Config
+}
+
+func getPath(scanPath string, name string) string {
+	var path string
+	if _, err := os.Stat(filepath.Join(scanPath, name+".git")); err == nil {
+		path = filepath.Join(scanPath, name+".git")
+	} else {
+		path = filepath.Join(scanPath, name)
+	}
+	return path
 }
 
 func (d *deps) Index(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +71,7 @@ func (d *deps) Index(w http.ResponseWriter, r *http.Request) {
 		desc := getDescription(path)
 
 		infos = append(infos, info{
-			Name: dir.Name(),
+			Name: strings.TrimSuffix(dir.Name(), ".git"),
 			Desc: desc,
 			Idle: humanize.Time(c.Author.When),
 			d:    c.Author.When,
@@ -89,7 +102,7 @@ func (d *deps) RepoIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name = filepath.Clean(name)
-	path := filepath.Join(d.c.Repo.ScanPath, name)
+	path := getPath(d.c.Repo.ScanPath, name)
 
 	gr, err := git.Open(path, "")
 	if err != nil {
@@ -111,11 +124,14 @@ func (d *deps) RepoIndex(w http.ResponseWriter, r *http.Request) {
 		if len(content) > 0 {
 			switch ext {
 			case ".md", ".mkd", ".markdown":
-				unsafe := blackfriday.Run(
-					[]byte(content),
-					blackfriday.WithExtensions(blackfriday.CommonExtensions),
+				md := goldmark.New(
+					goldmark.WithExtensions(extension.GFM),
 				)
-				html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+				var buf bytes.Buffer
+				if err := md.Convert([]byte(content), &buf); err != nil {
+					break
+				}
+				html := bluemonday.UGCPolicy().SanitizeBytes(buf.Bytes())
 				readmeContent = template.HTML(html)
 			default:
 				readmeContent = template.HTML(
@@ -171,7 +187,7 @@ func (d *deps) RepoTree(w http.ResponseWriter, r *http.Request) {
 	ref := flow.Param(r.Context(), "ref")
 
 	name = filepath.Clean(name)
-	path := filepath.Join(d.c.Repo.ScanPath, name)
+	path := getPath(d.c.Repo.ScanPath, name)
 	gr, err := git.Open(path, ref)
 	if err != nil {
 		d.Write404(w)
@@ -206,7 +222,7 @@ func (d *deps) FileContent(w http.ResponseWriter, r *http.Request) {
 	ref := flow.Param(r.Context(), "ref")
 
 	name = filepath.Clean(name)
-	path := filepath.Join(d.c.Repo.ScanPath, name)
+	path := getPath(d.c.Repo.ScanPath, name)
 	gr, err := git.Open(path, ref)
 	if err != nil {
 		d.Write404(w)
@@ -232,7 +248,8 @@ func (d *deps) Log(w http.ResponseWriter, r *http.Request) {
 	}
 	ref := flow.Param(r.Context(), "ref")
 
-	path := filepath.Join(d.c.Repo.ScanPath, name)
+	name = filepath.Clean(name)
+	path := getPath(d.c.Repo.ScanPath, name)
 	gr, err := git.Open(path, ref)
 	if err != nil {
 		d.Write404(w)
@@ -271,7 +288,8 @@ func (d *deps) Diff(w http.ResponseWriter, r *http.Request) {
 	}
 	ref := flow.Param(r.Context(), "ref")
 
-	path := filepath.Join(d.c.Repo.ScanPath, name)
+	name = filepath.Clean(name)
+	path := getPath(d.c.Repo.ScanPath, name)
 	gr, err := git.Open(path, ref)
 	if err != nil {
 		d.Write404(w)
@@ -311,7 +329,8 @@ func (d *deps) Refs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := filepath.Join(d.c.Repo.ScanPath, name)
+	name = filepath.Clean(name)
+	path := getPath(d.c.Repo.ScanPath, name)
 	gr, err := git.Open(path, "")
 	if err != nil {
 		d.Write404(w)

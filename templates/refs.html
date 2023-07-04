@@ -1,38 +1,41 @@
 {{ define "refs" }}
 <html>
-{{ template "head" . }}
+	{{ template "head" . }}
+	<body>
+		<div class="cards">
+			{{ template "repoheader" . }}
 
-  {{ template "repoheader" . }}
-  <body>
-    {{ template "nav" . }}
-    <main>
-      {{ $name := .name }}
-      <h3>branches</h3>
-      <div class="refs">
-      {{ range .branches }}
-        <div>
-        <strong>{{ .Name.Short }}</strong>
-        <a href="/{{ $name }}/tree/{{ .Name.Short }}/">browse</a>
-        <a href="/{{ $name }}/log/{{ .Name.Short }}">log</a>
-        </div>
-      {{ end }}
-      </div>
-      {{ if .tags }}
-      <h3>tags</h3>
-      <div class="refs">
-      {{ range .tags }}
-      <div>
-      <strong>{{ .Name }}</strong>
-      <a href="/{{ $name }}/tree/{{ .Name }}/">browse</a>
-      <a href="/{{ $name }}/log/{{ .Name }}">log</a>
-      {{ if .Message }}
-      <pre>{{ .Message }}</pre>
-      </div>
-      {{ end }}
-      {{ end }}
-      </div>
-      {{ end }}
-    </main>
-  </body>
+			{{ $repo := .name }}
+
+			<div class="card">
+				<h3 class="title">branches</h3>
+				<div class="refs">
+				{{ range .branches }}
+					<div>
+						<strong>{{ .Name.Short }}</strong>
+						<a href="/{{ $repo }}/tree/{{ .Name.Short }}/">browse</a>
+						<a href="/{{ $repo }}/log/{{ .Name.Short }}">log</a>
+					</div>
+				{{ end }}
+				</div>
+			</div>
+
+			{{ if .tags }}
+				<div class="card">
+					<h3 class="title">tags</h3>
+					<div class="refs">
+						{{ range .tags }}
+							<div>
+								<strong>{{ .Name }}</strong>
+								<a href="/{{ $repo }}/tree/{{ .Name }}/">browse</a>
+								<a href="/{{ $repo }}/log/{{ .Name }}">log</a>
+								{{ if .Message }}<pre>{{ .Message }}</pre>{{ end }}
+							</div>
+						{{ end }}
+					</div>
+				</div>
+			{{ end }}
+		</div>
+	</body>
 </html>
 {{ end }}

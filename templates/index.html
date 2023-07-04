@@ -1,21 +1,22 @@
 {{ define "index" }}
 <html>
-{{ template "head" . }}
-
-  <header>
-    <h1>{{ .meta.Title }}</h1>
-    <h2>{{ .meta.Description }}</h2>
-  </header>
-  <body>
-    <main>
-      <div class="index">
-      {{ range .info }}
-       <div class="index-name"><a href="/{{ .Name }}">{{ .Name }}</a></div>
-       <div class="desc">{{ .Desc }}</div>
-       <div>{{ .Idle }}</div>
-      {{ end }}
-      </div>
-    </main>
-  </body>
+	{{ template "head" . }}
+	<body>
+		<div class="cards">
+			<header class="card">
+				<h1 class="title">{{ .meta.Title }}</h1>
+				<p class="center">{{ .meta.Description }}</p>
+			</header>
+			<div class="card">
+				<div class="grid index">
+					{{ range .info }}
+						<div class="index-name"><a href="/{{ .Name }}">{{ .Name }}</a></div>
+						<div class="desc">{{ .Desc }}</div>
+						<div>{{ .Idle }}</div>
+					{{ end }}
+				</div>
+			</div>
+		</div>
+	</body>
 </html>
 {{ end }}

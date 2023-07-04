@@ -1,5 +1,5 @@
 repo:
-  scanPath: /var/www/git
+  scanPath: ./tmp/git
   readme:
     - readme
     - README
@@ -12,9 +12,9 @@ dirs:
   templates: ./templates
   static: ./static
 meta:
-  title: git good
-  description: i think it's a skill issue
+  title: reese codes
+  description: 🐏💻🐏💻
 server:
-  name: git.icyphox.sh
+  name: localhost
   host: 127.0.0.1
   port: 5555

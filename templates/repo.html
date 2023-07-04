@@ -1,38 +1,24 @@
 {{ define "repo" }}
 <html>
-{{ template "head" . }}
+	{{ template "head" . }}
+	<body>
+		<div class="cards">
+			{{ template "repoheader" . }}
 
-{{ template "repoheader" . }}
+			<div class="card">
+				<h3 class="title">clone</h3>
+				<div class="code">git clone ssh://{{ .servername }}/{{ .name }}</div>
+			</div>
 
-  <body>
-    {{ template "nav" . }}
-    <main>
-      {{ $repo := .name }}
-      <div class="log">
-        {{ range .commits }}
-        <div>
-          <div><a href="/{{ $repo }}/commit/{{ .Hash.String }}" class="commit-hash">{{ slice .Hash.String 0 8 }}</a></div>
-          <pre>{{ .Message }}</pre>
-        </div>
-        <div class="commit-info">
-          {{ .Author.Name }} <a href="mailto:{{ .Author.Email }}" class="commit-email">{{ .Author.Email }}</a>
-          <div>{{ .Author.When.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</div>
-        </div>
-        {{ end }}
-      </div>
-{{- if .readme }}
-      <article class="readme">
-        {{- .readme -}}
-      </article>
-{{- end -}}
-
-      <div class="clone-url">
-      <strong>clone</strong>
-        <pre>
-git clone https://{{ .servername }}/{{ .name }}
-        </pre>
-      </div>
-    </main>
-  </body>
+			{{- if .readme }}
+				<article class="card readme">
+					<h3 class="title">readme</h3>
+					<div class="blog-post">
+						<div class="post-body">{{- .readme -}}</div>
+					</div>
+				</article>
+			{{- end -}}
+		</div>
+	</body>
 </html>
 {{ end }}

@@ -1,25 +1,27 @@
 {{ define "log" }}
 <html>
-{{ template "head" . }}
+	{{ template "head" . }}
+	<body>
+		<div class="cards">
+			{{ template "repoheader" . }}
 
-  {{ template "repoheader" . }}
-  <body>
-    {{ template "nav" . }}
-    <main>
-      {{ $repo := .name }}
-      <div class="log">
-        {{ range .commits }}
-        <div>
-          <div><a href="/{{ $repo }}/commit/{{ .Hash.String }}" class="commit-hash">{{ slice .Hash.String 0 8 }}</a></div>
-          <pre>{{ .Message }}</pre>
-        </div>
-        <div class="commit-info">
-          {{ .Author.Name }} <a href="mailto:{{ .Author.Email }}" class="commit-email">{{ .Author.Email }}</a>
-          <div>{{ .Author.When.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</div>
-        </div>
-        {{ end }}
-      </div>
-    </main>
-  </body>
+			<div class="card">
+				<h3 class="title">log</h3>
+				<div class="grid log">
+					{{ $repo := .name }}
+					{{ range .commits }}
+						<div>
+							<div><a href="/{{ $repo }}/commit/{{ .Hash.String }}" class="commit-hash">{{ slice .Hash.String 0 8 }}</a></div>
+							<pre>{{ .Message }}</pre>
+						</div>
+						<div class="commit-info">
+							{{ .Author.Name }} <a href="mailto:{{ .Author.Email }}" class="commit-email">{{ .Author.Email }}</a>
+							<div>{{ .Author.When.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</div>
+						</div>
+					{{ end }}
+				</div>
+			</div>
+		</div>
+	</body>
 </html>
 {{ end }}
