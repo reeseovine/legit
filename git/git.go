@@ -3,6 +3,7 @@ package git
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -102,29 +103,50 @@ func (g *GitRepo) FileContent(path string) (string, error) {
 }
 
 func (g *GitRepo) Tags() ([]*object.Tag, error) {
-	ti, err := g.r.TagObjects()
+	iter, err := g.r.Tags()
 	if err != nil {
 		return nil, fmt.Errorf("tag objects: %w", err)
 	}
 
-	tags := []*object.Tag{}
-
-	_ = ti.ForEach(func(t *object.Tag) error {
-		for i, existing := range tags {
-			if existing.Name == t.Name {
-				if t.Tagger.When.After(existing.Tagger.When) {
-					tags[i] = t
-				}
-				return nil
+	var tags TagList
+	_ = iter.ForEach(func (ref *plumbing.Reference) error {
+		obj, err := g.r.TagObject(ref.Hash()) // ??
+		switch err {
+		case nil:
+			// annotated tag
+			tags = append(tags, obj)
+		case plumbing.ErrObjectNotFound:
+			// lightweight tag
+			tag := object.Tag{
+				Hash: ref.Hash(),
+				Name: strings.TrimPrefix(string(ref.Name()), "refs/tags/"),
 			}
+			tags = append(tags, &tag)
 		}
-		tags = append(tags, t)
 		return nil
 	})
 
-	var tagList TagList
-	tagList = tags
-	sort.Sort(tagList)
+	// ti, err := g.r.TagObjects()
+	// if err != nil {
+	// 	return nil, fmt.Errorf("tag objects: %w", err)
+	// }
+
+	// tags := []*object.Tag{}
+
+	// _ = ti.ForEach(func(t *object.Tag) error {
+	// 	for i, existing := range tags {
+	// 		if existing.Name == t.Name {
+	// 			if t.Tagger.When.After(existing.Tagger.When) {
+	// 				tags[i] = t
+	// 			}
+	// 			return nil
+	// 		}
+	// 	}
+	// 	tags = append(tags, t)
+	// 	return nil
+	// })
+
+	sort.Sort(tags)
 
 	return tags, nil
 }

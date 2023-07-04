@@ -9,31 +9,27 @@
 
 			<div class="card">
 				<h3 class="title">branches</h3>
-				<div class="refs">
+				<div class="grid refs">
 				{{ range .branches }}
-					<div>
-						<strong>{{ .Name.Short }}</strong>
-						<a href="/{{ $repo }}/tree/{{ .Name.Short }}/">browse</a>
-						<a href="/{{ $repo }}/log/{{ .Name.Short }}">log</a>
-					</div>
+					<strong>{{ .Name.Short }}</strong>
+					<a href="/{{ $repo }}/tree/{{ .Name.Short }}/">browse</a>
+					<a href="/{{ $repo }}/log/{{ .Name.Short }}">log</a>
 				{{ end }}
 				</div>
 			</div>
 
 			{{ if .tags }}
-				<div class="card">
-					<h3 class="title">tags</h3>
-					<div class="refs">
-						{{ range .tags }}
-							<div>
-								<strong>{{ .Name }}</strong>
-								<a href="/{{ $repo }}/tree/{{ .Name }}/">browse</a>
-								<a href="/{{ $repo }}/log/{{ .Name }}">log</a>
-								{{ if .Message }}<pre>{{ .Message }}</pre>{{ end }}
-							</div>
-						{{ end }}
-					</div>
+			<div class="card">
+				<h3 class="title">tags</h3>
+				<div class="grid refs">
+					{{ range .tags }}
+						<strong>{{ .Name }}</strong>
+						<a href="/{{ $repo }}/tree/{{ .Name }}/">browse</a>
+						<a href="/{{ $repo }}/log/{{ .Name }}">log</a>
+						{{ if .Message }}<pre>{{ .Message }}</pre>{{ end }}
+					{{ end }}
 				</div>
+			</div>
 			{{ end }}
 		</div>
 	</body>
