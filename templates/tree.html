@@ -12,35 +12,36 @@
 				<h3 class="title">tree &mdash; /{{ $parent }}</h3>
 				<div class="grid tree">
 					{{ if $parent }}
-					<div></div>
-					<div></div>
-					<div><a href="/{{ $repo }}/tree/{{ $ref }}/{{ .dotdot }}">..</a></div>
+						<div></div>
+						<div></div>
+						<div><a class="no-underline" href="/{{ $repo }}/tree/{{ $ref }}/{{ .dotdot }}">⬑up</a></div>
 					{{ end }}
+
+					{{/* Directories */}}
 					{{ range .files }}
-					{{ if not .IsFile }}
-					<div class="mode">{{ .Mode }}</div>
-					<div class="size">{{ .Size }}</div>
-					<div>
-						{{ if $parent }}
-						<a href="/{{ $repo }}/tree/{{ $ref }}/{{ $parent }}/{{ .Name }}">{{ .Name }}/</a>
-						{{ else }}
-						<a href="/{{ $repo }}/tree/{{ $ref }}/{{ .Name }}">{{ .Name }}/</a>
+						{{ if not .IsFile }}
+							<div class="mode">{{ .Mode }}</div>
+							<div class="size">{{ .Size }}</div>
+							<div>
+								<a class="no-underline" href="/{{ $repo }}/tree/{{ $ref }}/{{ if $parent }}{{ $parent }}/{{ end }}{{ .Name }}">
+									{{ .Name }}/
+								</a>
+							</div>
 						{{ end }}
-					</div>
+						</a>
 					{{ end }}
-					{{ end }}
+
 					{{ range .files }}
-					{{ if .IsFile }}
-					<div class="mode">{{ .Mode }}</div>
-					<div class="size">{{ .Size }}</div>
-					<div>
-						{{ if $parent }}
-						<a href="/{{ $repo }}/blob/{{ $ref }}/{{ $parent }}/{{ .Name }}">{{ .Name }}</a>
-						{{ else }}
-						<a href="/{{ $repo }}/blob/{{ $ref }}/{{ .Name }}">{{ .Name }}</a>
+						{{ if .IsFile }}
+							<div class="mode">{{ .Mode }}</div>
+							<div class="size">{{ .Size }}</div>
+							<div>
+								<a class="no-underline" href="/{{ $repo }}/tree/{{ $ref }}/{{ if $parent }}{{ $parent }}/{{ end }}{{ .Name }}">
+									{{ .Name }}
+								</a>
+							</div>
 						{{ end }}
-					</div>
-					{{ end }}
+						</a>
 					{{ end }}
 				</div>
 			</div>
