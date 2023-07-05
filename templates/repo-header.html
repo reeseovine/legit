@@ -1,13 +1,24 @@
 {{ define "repoheader" }}
 <header class="card">
-	<h2 class="title flex-responsive">
+	<h2 class="title grid">
 		<a href="/" title="all repos" class="no-underline left">&lt;-</a>
 		<span>{{ .name }}</span>
 		<span class="ref">{{ if .ref }}@ {{ .ref }}{{ end }}</span>
 	</h2>
-	{{ if .desc }}
+
+	{{- if .desc -}}
 		<h3 class="desc">{{ .desc }}</h3>
-	{{ end }}
-	{{ template "nav" . }}
+	{{- end -}}
+
+	<nav class="flex-center">
+		{{ if .name }}
+			<a href="/{{ .name }}">summary</a>
+			<a href="/{{ .name }}/refs">refs</a>
+				{{ if .ref }}
+					<a href="/{{ .name }}/tree/{{ .ref }}/">tree</a>
+					<a href="/{{ .name }}/log/{{ .ref }}">log</a>
+				{{ end }}
+		{{ end }}
+	</nav>
 </header>
 {{ end }}
