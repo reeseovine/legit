@@ -1,11 +1,15 @@
 {{ define "500" }}
 <html>
-  <title>500</title>
-  <body>
-    <main>
-      <h3>500 &mdash; something broke!</h3>
-    </main>
-  </body>
+	<title>500</title>
+	<body>
+		<main class="cards">
+			<div class="card">
+				<h3 class="title">500</h3>
+				<p>something broke!</p>
+			</div>
 
+			{{ template "footer" . }}
+		</main>
+	</body>
 </html>
 {{ end }}

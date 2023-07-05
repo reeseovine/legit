@@ -1,11 +1,15 @@
 {{ define "404" }}
 <html>
-  <title>404</title>
-  <body>
-    <main>
-      <h3>404 &mdash; nothing like that here.</h3>
-    </main>
-  </body>
+	<title>404</title>
+	<body>
+		<main class="cards">
+			<div class="card">
+				<h3 class="title">404</h3>
+				<p>nothing like that here.</p>
+			</div>
 
+			{{ template "footer" . }}
+		</main>
+	</body>
 </html>
 {{ end }}

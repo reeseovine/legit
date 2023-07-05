@@ -9,4 +9,4 @@ fork of https://github.com/icyphox/legit personalized for https://git.ovine.xyz
 	- code blocks
 	- spacing, in general
 - clean up css
-- fix long refs in header
+- fix repo header layout - a flexbox isn't good enough

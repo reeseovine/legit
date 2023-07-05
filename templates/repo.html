@@ -11,13 +11,13 @@
 			</div>
 
 			{{- if .readme }}
-				<article class="card readme">
+				<div class="card">
 					<h3 class="title">readme</h3>
-					<div class="blog-post">
-						<div class="post-body">{{- .readme -}}</div>
-					</div>
-				</article>
+					<article class="readme">{{- .readme -}}</article>
+				</div>
 			{{- end -}}
+
+			{{ template "footer" . }}
 		</div>
 	</body>
 </html>
