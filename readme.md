@@ -10,3 +10,4 @@ fork of https://github.com/icyphox/legit personalized for https://git.ovine.xyz
 	- spacing, in general
 - clean up css
 - fix repo header layout - a flexbox isn't good enough
+- add copy button to code blocks (can this be done without JS?)
