@@ -26,8 +26,8 @@
 		{{ else }}
 		<title>{{ .meta.Title }}</title>
 		{{ end }}
-		{{ if and .servername .repo }}
-		<meta name="go-import" content="{{ .servername}}/{{ .name }} git https://{{ .servername }}/{{ .name }}.git">
+		{{ if and .servername .gomod }}
+		<meta name="go-import" content="{{ .servername}}/{{ .name }} git https://{{ .servername }}/{{ .name }}">
 		{{ end }}
 	</head>
 {{ end }}
