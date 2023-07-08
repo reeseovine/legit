@@ -7,16 +7,19 @@
 
 			<div class="card">
 				<h3 class="title">log</h3>
-				<div class="grid log">
+				<div class="log">
 					{{ $repo := .name }}
 					{{ range .commits }}
 						<div>
-							<div><a href="/{{ $repo }}/commit/{{ .Hash.String }}" class="commit-hash">{{ slice .Hash.String 0 8 }}</a></div>
-							<pre>{{ .Message }}</pre>
-						</div>
-						<div class="commit-info">
-							{{ .Author.Name }} <a href="mailto:{{ .Author.Email }}" class="commit-email">{{ .Author.Email }}</a>
-							<div>{{ .Author.When.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</div>
+							<div>
+								<strong>{{ .Author.Name }}</strong>
+								committed on
+								<strong>{{ .Author.When.Format "Jan 02 2006" }}</strong>:
+							</div>
+							<div class="grid">
+								<pre class="code">{{ .Message }}</pre>
+								<strong><a href="/{{ $repo }}/commit/{{ .Hash.String }}">{{ slice .Hash.String 0 7 }}</a></strong>
+							</div>
 						</div>
 					{{ end }}
 				</div>

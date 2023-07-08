@@ -1,9 +1,10 @@
 {{ define "repoheader" }}
+<h5><a href="/" class="no-underline">&lt;- all repos</a></h5>
+
 <header class="card">
-	<h2 class="title grid">
-		<a href="/" title="all repos" class="no-underline left">&lt;-</a>
+	<h2 class="title">
 		<span>{{ .name }}</span>
-		<span class="ref">{{ if .ref }}@ {{ .ref }}{{ end }}</span>
+		{{ if .ref }}<span class="ref">@ {{ .ref }}</span>{{ end }}
 	</h2>
 
 	{{- if .desc -}}
