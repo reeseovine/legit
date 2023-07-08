@@ -36,7 +36,7 @@
 							<div class="mode">{{ .Mode }}</div>
 							<div class="size">{{ .Size }}</div>
 							<div>
-								<a class="no-underline" href="/{{ $repo }}/tree/{{ $ref }}/{{ if $parent }}{{ $parent }}/{{ end }}{{ .Name }}">
+								<a class="no-underline" href="/{{ $repo }}/blob/{{ $ref }}/{{ if $parent }}{{ $parent }}/{{ end }}{{ .Name }}">
 									{{ .Name }}
 								</a>
 							</div>

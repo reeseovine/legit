@@ -6,95 +6,83 @@
 			{{ template "repoheader" . }}
 
 			<div class="card">
+				<h3 class="title">commit</h3>
 				<section class="commit">
-					<pre class="code">
-						{{- .commit.Message -}}
-					</pre>
-					<div class="commit-info">
-					{{ .commit.Author.Name }} <a href="mailto:{{ .commit.Author.Email }}" class="commit-email">{{ .commit.Author.Email}}</a>
-					<div>{{ .commit.Author.When.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</div>
+					<div>
+						<strong>{{ .commit.Author.Name }}</strong>
+						committed on
+						<strong>{{ .commit.Author.When.Format "Jan 02 2006" }}</strong>
+						at
+						<strong>{{ .commit.Author.When.Format "15:04:05 UTC" }}</strong>:
 					</div>
+
+					<pre class="code wrap">{{ .commit.Message }}</pre>
+
+					<div class="grid">
+						<strong>this commit</strong>
+						<a href="/{{ .name }}/commit/{{ .commit.This }}">{{ .commit.This }}</a>
+						{{ if .commit.Parent -}}
+							<strong>parent</strong>
+							<a href="/{{ .name }}/commit/{{ .commit.Parent }}" class="commit-hash">{{ .commit.Parent }}</a>
+						{{- end }}
+					</div>
+
 
 					<div>
-					<strong>commit</strong>
-					<p><a href="/{{ .name }}/commit/{{ .commit.This }}" class="commit-hash">
-						{{ .commit.This }}
-					</a>
-					</p>
-					</div>
-
-					{{ if .commit.Parent }}
-					<div>
-					<strong>parent</strong>
-					<p><a href="/{{ .name }}/commit/{{ .commit.Parent }}" class="commit-hash">
-						{{ .commit.Parent }}
-					</a></p>
-					</div>
-
-					{{ end }}
-					<div class="diff-stat">
-						<div>
 						{{ .stat.FilesChanged }} files changed,
 						{{ .stat.Insertions }} insertions(+),
 						{{ .stat.Deletions }} deletions(-)
-						</div>
-						<div>
-							<br>
-							<strong>jump to</strong>
-							{{ range .diff }}
-							<ul>
-							<li><a href="#{{ .Name.New }}">{{ .Name.New }}</a></li>
-							</ul>
-							{{ end }}
-						</div>
 					</div>
-				</section>
-				<section>
+
+					<div>
+						<h4>jump to</h4>
+						<ul>
+							{{ range .diff }}
+								<li><a href="#{{ .Name.New }}">{{ .Name.New }}</a></li>
+							{{ end }}
+						</ul>
+					</div>
+
 					{{ $repo := .name }}
 					{{ $this := .commit.This }}
 					{{ $parent := .commit.Parent }}
 					{{ range .diff }}
-						<div id="{{ .Name.New }}">
-							<div class="diff">
-							{{ if .IsNew }}
-							<span class="diff-type">A</span>
-							{{ end }}
-							{{ if .IsDelete }}
-							<span class="diff-type">D</span>
-							{{ end }}
-							{{ if not (or .IsNew .IsDelete) }}
-							<span class="diff-type">M</span>
-							{{ end }}
-						{{ if .Name.Old }}
-						<a href="/{{ $repo }}/blob/{{ $parent }}/{{ .Name.Old }}">{{ .Name.Old }}</a>
-						{{ if .Name.New }}
-							&#8594;
-							<a href="/{{ $repo }}/blob/{{ $this }}/{{ .Name.New }}">{{ .Name.New }}</a>
-						{{ end }}
-						{{ else }}
-						<a href="/{{ $repo }}/blob/{{ $this }}/{{ .Name.New }}">{{ .Name.New }}</a>
-						{{- end -}}
-						{{ if .IsBinary }}
-						<p>Not showing binary file.</p>
-						{{ else }}
-							<pre>
-							{{- range .TextFragments -}}
-							<p>{{- .Header -}}</p>
-							{{- range .Lines -}}
-								{{- if eq .Op.String "+" -}}
-								<span class="diff-add">{{ .String }}</span>
+						<div class="diff">
+							<h4 id="{{ .Name.New }}">
+								{{ if .IsNew }}
+									<span class="diff-type">A</span>
+								{{ else if .IsDelete }}
+									<span class="diff-type">D</span>
+								{{ else if not (or .IsNew .IsDelete) }}
+									<span class="diff-type">M</span>
+								{{ end }}
+								{{ if .Name.Old }}
+									<a href="/{{ $repo }}/blob/{{ $parent }}/{{ .Name.Old }}">{{ .Name.Old }}</a>
+									{{ if ne .Name.Old .Name.New }}
+										-&gt;
+										<a href="/{{ $repo }}/blob/{{ $this }}/{{ .Name.New }}">{{ .Name.New }}</a>
+									{{ end }}
+								{{ else }}
+									<a href="/{{ $repo }}/blob/{{ $this }}/{{ .Name.New }}">{{ .Name.New }}</a>
 								{{- end -}}
-								{{- if eq .Op.String "-" -}}
-								<span class="diff-del">{{ .String }}</span>
-								{{- end -}}
-								{{- if eq .Op.String " " -}}
-								<span class="diff-noop">{{ .String }}</span>
-								{{- end -}}
+							</h4>
+							{{ if .IsBinary }}
+								<p>Not showing binary file.</p>
+							{{ else }}
+								<pre class="code scroll">
+									{{- range .TextFragments -}}
+										{{- range .Lines -}}
+											{{- if eq .Op.String "+" -}}
+												<span class="diff-add">{{ .String }}</span>
+											{{- else if eq .Op.String "-" -}}
+												<span class="diff-del">{{ .String }}</span>
+											{{- else if eq .Op.String " " -}}
+												<span class="diff-noop">{{ .String }}</span>
+											{{- end -}}
+										{{- end -}}
+									{{- end -}}
+								</pre>
 							{{- end -}}
-							{{- end -}}
-						{{- end -}}
-							</pre>
-						</div>
 						</div>
 					{{ end }}
 				</section>

@@ -17,7 +17,7 @@
 								<strong>{{ .Author.When.Format "Jan 02 2006" }}</strong>:
 							</div>
 							<div class="grid">
-								<pre class="code">{{ .Message }}</pre>
+								<pre class="code wrap">{{ .Message }}</pre>
 								<strong><a href="/{{ $repo }}/commit/{{ .Hash.String }}">{{ slice .Hash.String 0 7 }}</a></strong>
 							</div>
 						</div>
