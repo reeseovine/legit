@@ -8,13 +8,13 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-git/go-billy/v5 v5.4.1
 	github.com/go-git/go-git/v5 v5.6.1
+	github.com/jkboxomine/goldmark-headingid v0.0.0-20200109122657-8b6c16c18388
 	github.com/microcosm-cc/bluemonday v1.0.23
-	github.com/russross/blackfriday/v2 v2.1.0
 	golang.org/x/sys v0.7.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/inhies/go-bytesize v0.0.0-20220417184213-4913239db9cf // indirect
+require github.com/inhies/go-bytesize v0.0.0-20220417184213-4913239db9cf
 
 require (
 	github.com/Microsoft/go-winio v0.6.0 // indirect

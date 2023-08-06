@@ -17,13 +17,70 @@ import (
 	"github.com/alexedwards/flow"
 	"github.com/dustin/go-humanize"
 	"github.com/microcosm-cc/bluemonday"
+
 	"github.com/yuin/goldmark"
-    "github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/text"
+	"github.com/yuin/goldmark/util"
+	"github.com/jkboxomine/goldmark-headingid"
 )
 
 type deps struct {
 	c *config.Config
 }
+
+type rewriter struct {
+	Repo string
+	Ref  string
+}
+// Rewrite relative URLs to point to a file within the repo
+func (t *rewriter) ResolveURL(destination []byte, raw bool) ([]byte) {
+	dest := strings.TrimPrefix(string(destination), "/")
+
+	route := "blob"
+	if raw {
+		route = "raw"
+	}
+
+	if !strings.HasPrefix(dest, "http") && !strings.HasPrefix(dest, "#") {
+		return []byte("/"+t.Repo+"/"+route+"/"+t.Ref+"/"+dest)
+	}
+
+	return destination
+}
+// Make custom modifications to markdown when rendering
+func (t *rewriter) Transform(doc *ast.Document, reader text.Reader, pctx parser.Context) {
+	ast.Walk(doc, func(node ast.Node, enter bool) (ast.WalkStatus, error) {
+		if !enter {
+			return ast.WalkContinue, nil
+		}
+
+		kind := node.Kind().String()
+		// fmt.Println(kind)
+		switch kind {
+		// case "Heading":
+		// 	h, _ := node.(*ast.Heading)
+
+		case "Image":
+			img, _ := node.(*ast.Image)
+			img.Destination = t.ResolveURL(img.Destination, true)
+		case "Link":
+			a, _ := node.(*ast.Link)
+			a.Destination = t.ResolveURL(a.Destination, false)
+		case "TableHeader":
+			// Remove empty table headers
+			text := node.Text([]byte{})
+			if len(text) == 0 {
+				node.Parent().RemoveChild(node.Parent(), node)
+			}
+		}
+
+		return ast.WalkContinue, nil
+	})
+}
+
 
 func getPath(scanPath string, name string) string {
 	var path string
@@ -124,11 +181,25 @@ func (d *deps) RepoIndex(w http.ResponseWriter, r *http.Request) {
 		if len(content) > 0 {
 			switch ext {
 			case ".md", ".mkd", ".markdown":
+				mainBranch, err := gr.FindMainBranch(d.c.Repo.MainBranch)
+				if err != nil {
+					break
+				}
+
+				rw := &rewriter{}
+				rw.Repo = name
+				rw.Ref = mainBranch
+
+				ctx := parser.NewContext(parser.WithIDs(headingid.NewIDs()))
 				md := goldmark.New(
 					goldmark.WithExtensions(extension.GFM),
+					goldmark.WithParserOptions(
+						parser.WithASTTransformers(util.Prioritized(rw, 100)),
+						parser.WithAutoHeadingID(),
+					),
 				)
 				var buf bytes.Buffer
-				if err := md.Convert([]byte(content), &buf); err != nil {
+				if err := md.Convert([]byte(content), &buf, parser.WithContext(ctx)); err != nil {
 					break
 				}
 				html := bluemonday.UGCPolicy().SanitizeBytes(buf.Bytes())
@@ -365,6 +436,32 @@ func (d *deps) Refs(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+}
+
+func (d *deps) Raw(w http.ResponseWriter, r *http.Request) {
+	name := flow.Param(r.Context(), "name")
+	if d.isIgnored(name) {
+		d.Write404(w)
+		return
+	}
+	treePath := flow.Param(r.Context(), "...")
+	ref := flow.Param(r.Context(), "ref")
+
+	name = filepath.Clean(name)
+	path := getPath(d.c.Repo.ScanPath, name)
+	gr, err := git.Open(path, ref)
+	if err != nil {
+		d.Write404(w)
+		return
+	}
+
+	reader, err := gr.FileRaw(treePath)
+	if err != nil {
+		d.Write404(w)
+		return
+	}
+
+	http.ServeContent(w, r, treePath, time.Now(), reader)
 }
 
 func (d *deps) ServeStatic(w http.ResponseWriter, r *http.Request) {

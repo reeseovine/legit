@@ -1,4 +1,5 @@
 {{ define "repo" }}
+<!DOCTYPE html>
 <html lang="en">
 	{{ template "head" . }}
 	<body>
@@ -11,9 +12,9 @@
 			</div>
 
 			{{- if .readme }}
-				<div class="card">
+				<div class="card readme">
 					<h3 class="title">readme</h3>
-					<article class="readme">{{- .readme -}}</article>
+					<article>{{- .readme -}}</article>
 				</div>
 			{{- end -}}
 

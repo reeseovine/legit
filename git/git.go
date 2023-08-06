@@ -1,7 +1,9 @@
 package git
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"sort"
 	"strings"
 
@@ -100,6 +102,32 @@ func (g *GitRepo) FileContent(path string) (string, error) {
 	} else {
 		return "Not displaying binary file", nil
 	}
+}
+
+// NOTE: this reads the *entire* file contents into memory. there is probably a better way.
+func (g *GitRepo) FileRaw(path string) (io.ReadSeeker, error) {
+	c, err := g.r.CommitObject(g.h)
+	if err != nil {
+		return nil, fmt.Errorf("commit object: %w", err)
+	}
+
+	tree, err := c.Tree()
+	if err != nil {
+		return nil, fmt.Errorf("file tree: %w", err)
+	}
+
+	file, err := tree.File(path)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := file.Blob.Reader()
+	b, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.NewReader(b), nil
 }
 
 func (g *GitRepo) Tags() ([]*object.Tag, error) {
