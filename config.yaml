@@ -1,5 +1,5 @@
 repo:
-  scanPath: ./tmp/git
+  scanPath: ./tmp
   readme:
     - readme
     - README

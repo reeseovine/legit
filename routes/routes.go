@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"git.icyphox.sh/legit/config"
-	"git.icyphox.sh/legit/git"
+	"git.ovine.xyz/legit/config"
+	"git.ovine.xyz/legit/git"
 	"github.com/alexedwards/flow"
 	"github.com/dustin/go-humanize"
 	"github.com/microcosm-cc/bluemonday"

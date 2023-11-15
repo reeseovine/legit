@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"git.icyphox.sh/legit/config"
+	"git.ovine.xyz/legit/config"
 	"github.com/alexedwards/flow"
 )
 
