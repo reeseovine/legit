@@ -9,12 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"git.ovine.xyz/legit/config"
 	"git.ovine.xyz/legit/git"
-	"github.com/alexedwards/flow"
 	"github.com/dustin/go-humanize"
 	"github.com/microcosm-cc/bluemonday"
 
@@ -39,13 +39,8 @@ type rewriter struct {
 func (t *rewriter) ResolveURL(destination []byte, raw bool) ([]byte) {
 	dest := strings.TrimPrefix(string(destination), "/")
 
-	route := "blob"
-	if raw {
-		route = "raw"
-	}
-
 	if !strings.HasPrefix(dest, "http") && !strings.HasPrefix(dest, "#") {
-		return []byte("/"+t.Repo+"/"+route+"/"+t.Ref+"/"+dest)
+		return []byte("/"+t.Repo+"/blob/"+t.Ref+"/"+dest+"?raw=true")
 	}
 
 	return destination
@@ -115,6 +110,7 @@ func (d *deps) Index(w http.ResponseWriter, r *http.Request) {
 		path := filepath.Join(d.c.Repo.ScanPath, dir.Name())
 		gr, err := git.Open(path, "")
 		if err != nil {
+			log.Println(err)
 			continue
 		}
 
@@ -153,7 +149,7 @@ func (d *deps) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *deps) RepoIndex(w http.ResponseWriter, r *http.Request) {
-	name := flow.Param(r.Context(), "name")
+	name := r.PathValue("name")
 	if d.isIgnored(name) {
 		d.Write404(w)
 		return
@@ -238,6 +234,7 @@ func (d *deps) RepoIndex(w http.ResponseWriter, r *http.Request) {
 	data["commits"] = commits
 	data["desc"] = getDescription(path)
 	data["servername"] = d.c.Server.Name
+	data["meta"] = d.c.Meta
 	data["gomod"] = isGoModule(gr)
 
 	if err := t.ExecuteTemplate(w, "repo", data); err != nil {
@@ -249,13 +246,13 @@ func (d *deps) RepoIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *deps) RepoTree(w http.ResponseWriter, r *http.Request) {
-	name := flow.Param(r.Context(), "name")
+	name := r.PathValue("name")
 	if d.isIgnored(name) {
 		d.Write404(w)
 		return
 	}
-	treePath := flow.Param(r.Context(), "...")
-	ref := flow.Param(r.Context(), "ref")
+	treePath := r.PathValue("rest")
+	ref := r.PathValue("ref")
 
 	name = filepath.Clean(name)
 	path := getPath(d.c.Repo.ScanPath, name)
@@ -284,13 +281,18 @@ func (d *deps) RepoTree(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *deps) FileContent(w http.ResponseWriter, r *http.Request) {
-	name := flow.Param(r.Context(), "name")
+	var raw bool
+	if rawParam, err := strconv.ParseBool(r.URL.Query().Get("raw")); err == nil {
+		raw = rawParam
+	}
+
+	name := r.PathValue("name")
 	if d.isIgnored(name) {
 		d.Write404(w)
 		return
 	}
-	treePath := flow.Param(r.Context(), "...")
-	ref := flow.Param(r.Context(), "ref")
+	treePath := r.PathValue("rest")
+	ref := r.PathValue("ref")
 
 	name = filepath.Clean(name)
 	path := getPath(d.c.Repo.ScanPath, name)
@@ -300,24 +302,30 @@ func (d *deps) FileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contents, err := gr.FileContent(treePath)
 	data := make(map[string]any)
 	data["name"] = name
 	data["ref"] = ref
 	data["desc"] = getDescription(path)
 	data["path"] = treePath
 
-	d.showFile(contents, data, w)
+	if raw {
+		reader, _ := gr.FileRaw(treePath)
+		http.ServeContent(w, r, treePath, time.Now(), reader)
+		// d.showRaw(contents, w)
+	} else {
+		contents, _ := gr.FileContent(treePath)
+		d.showFile(contents, data, w)
+	}
 	return
 }
 
 func (d *deps) Log(w http.ResponseWriter, r *http.Request) {
-	name := flow.Param(r.Context(), "name")
+	name := r.PathValue("name")
 	if d.isIgnored(name) {
 		d.Write404(w)
 		return
 	}
-	ref := flow.Param(r.Context(), "ref")
+	ref := r.PathValue("ref")
 
 	name = filepath.Clean(name)
 	path := getPath(d.c.Repo.ScanPath, name)
@@ -352,12 +360,12 @@ func (d *deps) Log(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *deps) Diff(w http.ResponseWriter, r *http.Request) {
-	name := flow.Param(r.Context(), "name")
+	name := r.PathValue("name")
 	if d.isIgnored(name) {
 		d.Write404(w)
 		return
 	}
-	ref := flow.Param(r.Context(), "ref")
+	ref := r.PathValue("ref")
 
 	name = filepath.Clean(name)
 	path := getPath(d.c.Repo.ScanPath, name)
@@ -394,7 +402,7 @@ func (d *deps) Diff(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *deps) Refs(w http.ResponseWriter, r *http.Request) {
-	name := flow.Param(r.Context(), "name")
+	name := r.PathValue("name")
 	if d.isIgnored(name) {
 		d.Write404(w)
 		return
@@ -438,34 +446,8 @@ func (d *deps) Refs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (d *deps) Raw(w http.ResponseWriter, r *http.Request) {
-	name := flow.Param(r.Context(), "name")
-	if d.isIgnored(name) {
-		d.Write404(w)
-		return
-	}
-	treePath := flow.Param(r.Context(), "...")
-	ref := flow.Param(r.Context(), "ref")
-
-	name = filepath.Clean(name)
-	path := getPath(d.c.Repo.ScanPath, name)
-	gr, err := git.Open(path, ref)
-	if err != nil {
-		d.Write404(w)
-		return
-	}
-
-	reader, err := gr.FileRaw(treePath)
-	if err != nil {
-		d.Write404(w)
-		return
-	}
-
-	http.ServeContent(w, r, treePath, time.Now(), reader)
-}
-
 func (d *deps) ServeStatic(w http.ResponseWriter, r *http.Request) {
-	f := flow.Param(r.Context(), "file")
+	f := r.PathValue("file")
 	f = filepath.Clean(filepath.Join(d.c.Dirs.Static, f))
 
 	http.ServeFile(w, r, f)

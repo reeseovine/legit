@@ -19,12 +19,12 @@
           pkgs = nixpkgsFor.${system};
         in
         {
-          legit = pkgs.buildGoModule {
+          legit = pkgs.buildGo122Module {
             pname = "legit";
             inherit version;
             src = ./.;
 
-            vendorSha256 = "sha256-8objapuS9wC3P6Ui1KygXiXJ8Vwd+9zMDo6OB68qgPs=";
+            vendorHash = "sha256-W7ul1bhq0rZSzuJ8CTxIklRPgBtmbKCRIepbWUK4S0o=";
           };
         });
 
