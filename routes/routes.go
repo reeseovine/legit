@@ -35,10 +35,10 @@ type rewriter struct {
 	Repo string
 	Ref  string
 }
-// Rewrite relative URLs to point to a file within the repo
 func (t *rewriter) ResolveURL(destination []byte, raw bool) ([]byte) {
 	dest := strings.TrimPrefix(string(destination), "/")
 
+	// Rewrite relative URLs to point to a file within the repo
 	if !strings.HasPrefix(dest, "http") && !strings.HasPrefix(dest, "#") {
 		return []byte("/"+t.Repo+"/blob/"+t.Ref+"/"+dest+"?raw=true")
 	}
