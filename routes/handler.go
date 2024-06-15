@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"strings"
 
 	"git.ovine.xyz/legit/config"
 )
@@ -11,9 +12,14 @@ import (
 func (d *deps) Multiplex(w http.ResponseWriter, r *http.Request) {
 	path := r.PathValue("rest")
 
+	// strip '.git' from repo names with a redirect
+	if strings.HasSuffix(r.URL.String(), ".git") {
+		http.Redirect(w, r, strings.TrimSuffix(r.URL.String(), ".git"), 301)
+	}
+
 	if r.URL.RawQuery == "service=git-receive-pack" {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("no pushing allowed!"))
+		w.Write([]byte("no pushing allowed! HTTP is read-only."))
 		return
 	}
 
