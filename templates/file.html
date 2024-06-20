@@ -7,7 +7,10 @@
 			{{ template "repoheader" . }}
 
 			<div class="card">
-				<h3 class="title">/{{ .path }}<a class="right no-underline" href="?raw=true">raw</a></h3>
+				<div class="title flex">
+					<h3>/{{ .path }}</h3>
+					<a class="no-underline" href="?raw=true">raw</a>
+				</div>
 				<div class="code file-wrapper">
 					<div class="line-numbers">
 						{{- range .linecount -}}
